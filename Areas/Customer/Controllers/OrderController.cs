@@ -78,13 +78,13 @@ namespace BETOnlineShopv1._0.Areas.Customer.Controllers
                 }
 
                     await CreatePdf();
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userToken);
-                    StringContent content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json");
-                    using (var response = await client.PostAsync("https://localhost:44368/api/Order/addanorder", content))
-                    {
-                        string apiRes = await response.Content.ReadAsStringAsync();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userToken);
+                StringContent content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json");
+                using (var response = await client.PostAsync("https://localhost:44368/api/Order/addanorder", content))
+                {
+                    string apiRes = await response.Content.ReadAsStringAsync();
 
-                    }
+                }
                 HttpContext.Session.Set("products", new List<Product>());
                 return View();
             }
@@ -113,10 +113,10 @@ namespace BETOnlineShopv1._0.Areas.Customer.Controllers
             try
             {
                 string MailBody = "Hi " + toEmail + " Please find attached summary of your order. Thank you";
-                string fromEmail = "functioningemailAddress";
+                string fromEmail = "somemailaddress";
                 string emailTitle = "Order Details";
                 string mailSubject = "Order Details";
-                string mailPassword = "mailpassword";
+                string mailPassword = "somepassword";
 
                 //Mail message
                 MailMessage message = new MailMessage(new MailAddress(fromEmail, emailTitle), new MailAddress(toEmail));
@@ -176,7 +176,7 @@ namespace BETOnlineShopv1._0.Areas.Customer.Controllers
                         new HtmlHelperOptions()
                         );
                     await viewResult.View.RenderAsync(viewContext);
-                    var htmlToPdf = new HtmlToPdf(1024);
+                    var htmlToPdf = new HtmlToPdf(1260,720);
                     htmlToPdf.Options.DrawBackground = true;
                     var pdf = htmlToPdf.ConvertHtmlString(stringWriter.ToString(), "https://localhost:44392/Customer/Order/CheckOut");
                     var pdfBytes = pdf.Save();
