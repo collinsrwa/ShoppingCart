@@ -113,10 +113,10 @@ namespace BETOnlineShopv1._0.Areas.Customer.Controllers
             try
             {
                 string MailBody = "Hi " + toEmail + " Please find attached summary of your order. Thank you";
-                string fromEmail = "backstreetcyber3@gmail.com";
+                string fromEmail = "functioningemailAddress";
                 string emailTitle = "Order Details";
                 string mailSubject = "Order Details";
-                string mailPassword = "wogia2020";
+                string mailPassword = "mailpassword";
 
                 //Mail message
                 MailMessage message = new MailMessage(new MailAddress(fromEmail, emailTitle), new MailAddress(toEmail));
