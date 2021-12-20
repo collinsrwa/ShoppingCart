@@ -1,0 +1,78 @@
+﻿@using SharedModels.Models;
+@model IEnumerable<Order>;
+@{
+    ViewData["Title"] = "All Orders";
+}
+
+<br />
+<br />
+<div class="row">
+    <div class="col-6">
+        <h2 class="text-info">Order List</h2>
+    </div>
+</div>
+<br />
+<div class="row">
+    <table class="table table-striped border" id="tOrders">
+        <thead>
+            <tr class="table-info">
+                <th>
+                    @Html.DisplayNameFor(c => c.OrderNo)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(c => c.Name)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(c => c.Email)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(c => c.MobileNumber)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(c => c.IsProcessed)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(c => c.OrderDate)
+                </th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+            <tr>
+                <td>@item.OrderNo</td>
+                <td>@item.Name</td>
+                <td>@item.Email</td>
+                <td>@item.MobileNumber</td>
+                <td>@item.IsProcessed</td>
+                <td>@item.OrderDate.ToString("yyyy-MM-dd")</td>
+                <td>
+                    <partial name="_ButtonPartial" model="item.Id" />
+                </td>
+            </tr>
+
+            }
+        </tbody>
+    </table>
+</div>
+@section scripts{
+    <script src="~/lib/AlertifyJS/alertify.min.js"></script>
+    <script src="~/lib/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/datatables/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#tOrders').DataTable();
+        }); 
+    </script>
+}
+<style>
+    .dataTables_wrapper {
+        position: relative;
+        clear: both;
+        zoom: 1;
+        width: 98.5%;
+        padding-left: 18px;
+    }
+</style>

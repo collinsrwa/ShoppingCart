@@ -90,7 +90,129 @@ namespace BETOnlineShopv1._0.Areas.Customer.Controllers
             }
             catch (Exception)
             {
+                return View();
+                throw new OperationCanceledException("Operation failed");
+            }
+        }
+        //Get all orders
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult<IEnumerable<Order>>> GetAllOrders()
+        {
+            try
+            {
+                List<Order> orderdItems = new List<Order>();
+                var userToken = HttpContext.Session.GetString("JWToken");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userToken);
+                using (var response = await client.GetAsync("https://localhost:44368/api/Order/getallorders"))
+                {
+                    string apiRes = await response.Content.ReadAsStringAsync();
+                    orderdItems = JsonConvert.DeserializeObject<List<Order>>(apiRes);
+                }
+                var orders = orderdItems;
+                return View(orders);
+            }
+            catch (Exception)
+            {
+                throw new OperationCanceledException("Operation failed");
+            }
+        }
+        
+        [Authorize]
+        public async Task<ActionResult<Order>> Edit(int? id)
+        {
+            try
+            {
+                Order orderdItem = new Order();
+                var userToken = HttpContext.Session.GetString("JWToken");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userToken);
+                using (var response = await client.GetAsync("https://localhost:44368/api/Order/"+id))
+                {
+                    string apiRes = await response.Content.ReadAsStringAsync();
+                    orderdItem = JsonConvert.DeserializeObject<Order>(apiRes);
+                }
+                var order = orderdItem;
+                return View(order);
+            }
+            catch (Exception)
+            {
+                throw new OperationCanceledException("Operation failed");
+            }
+        }
+        
+       
+        [HttpPost]
+        [Authorize]
+        public async Task<ActionResult<Order>> Edit(Order order)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    Order orderItem = new Order();
+                    var userToken = HttpContext.Session.GetString("JWToken");
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userToken);
+                    StringContent content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json");
+                    using (var response = await client.PutAsync("https://localhost:44368/api/Order/updateOrder", content))
+                    {
+                        string apiRes = await response.Content.ReadAsStringAsync();
+                        orderItem = JsonConvert.DeserializeObject<Order>(apiRes);
+                    }
+                    orderItem = order;
+                    TempData["save"] = "Order has been updated";
+                    return RedirectToAction(nameof(GetAllOrders));
+                }
+                return View(order);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
 
+        [HttpGet]
+        [Authorize]
+        public async Task<ActionResult<OrderDetails>> Details(int id)
+        {
+            try
+            {
+                List<OrderDetails> orderdetails = new List<OrderDetails>();
+                List<Product> products = new List<Product>();
+                Order order = new Order();
+
+                var userToken = HttpContext.Session.GetString("JWToken");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userToken);
+                using (var response = await client.GetAsync("https://localhost:44368/api/OrderDetails/" + id))
+                {
+                    string apiRes = await response.Content.ReadAsStringAsync();
+                    orderdetails = JsonConvert.DeserializeObject<List<OrderDetails>>(apiRes);
+                }
+                if (orderdetails != null)
+                {
+                    foreach (var item in orderdetails)
+                    {
+                        var product = item.Product;
+                        product.Quantity = item.Quantity;
+                        if (product.Quantity == 0) { product.Quantity = 1; }
+                        products.Add(product);
+                    }
+                    order = orderdetails.Select(x => x.Order).FirstOrDefault();
+                }
+                if (products != null)
+                {
+                    ViewBag.Products = products;
+                    ViewBag.Name = order.Name;
+                    ViewBag.OrderNo = order.OrderNo;
+                    ViewBag.Address = order.Address;
+                    ViewBag.Email = order.Email;
+                    ViewBag.MobileNumber = order.MobileNumber;
+                    ViewBag.OrderDate = order.OrderDate;
+
+                }
+                return View();
+            }
+            catch (Exception ex)
+            {
                 throw new OperationCanceledException("Operation failed");
             }
         }
@@ -145,7 +267,7 @@ namespace BETOnlineShopv1._0.Areas.Customer.Controllers
                 smtp.Credentials = credential;
                 smtp.Send(message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 throw new OperationCanceledException("Operation failed");
             }
@@ -184,14 +306,13 @@ namespace BETOnlineShopv1._0.Areas.Customer.Controllers
                     {
                         await streamWriter.BaseStream.WriteAsync(pdfBytes, 0, pdfBytes.Length);
                     }
-                    string fileToSend = path + "/" + GetOrderNo() + ".pdf";
+                    string fileToSend = path + "/OrderNo:" + GetOrderNo() + ".pdf";
                     string emailTo = User.Identity.Name;
                     SendMail(emailTo, fileToSend);
                 }
             }
             catch (Exception)
             {
-
                 throw new OperationCanceledException("Operation failed");
             }
         }

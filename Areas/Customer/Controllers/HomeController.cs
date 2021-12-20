@@ -63,7 +63,7 @@ namespace BETOnlineShopv1._0.Controllers
                     }
                     products = allproducts;
                 }
-                return View(products.ToList().ToPagedList(page ?? 1, 3));
+                return View(products.ToList().ToPagedList(page ?? 1, 6));
 
             }
             catch (Exception)

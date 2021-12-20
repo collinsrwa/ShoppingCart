@@ -450,3 +450,6 @@ C:\Users\hp\source\repos\ShoppingCart\obj\Debug\net5.0\BETOnlineShopv1.0.dll
 C:\Users\hp\source\repos\ShoppingCart\obj\Debug\net5.0\ref\BETOnlineShopv1.0.dll
 C:\Users\hp\source\repos\ShoppingCart\obj\Debug\net5.0\BETOnlineShopv1.0.pdb
 C:\Users\hp\source\repos\ShoppingCart\obj\Debug\net5.0\BETOnlineShopv1.0.genruntimeconfig.cache
+C:\Users\hp\source\repos\ShoppingCart\obj\Debug\net5.0\Razor\Areas\Customer\Views\Order\GetAllOrders.cshtml.g.cs
+C:\Users\hp\source\repos\ShoppingCart\obj\Debug\net5.0\Razor\Areas\Customer\Views\Order\Edit.cshtml.g.cs
+C:\Users\hp\source\repos\ShoppingCart\obj\Debug\net5.0\Razor\Areas\Customer\Views\Order\Details.cshtml.g.cs
