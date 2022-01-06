@@ -16,6 +16,7 @@ using X.PagedList;
 using Newtonsoft.Json;
 using System.Net.Http;
 using BETOnlineShopv1._0.Areas.Customer.Controllers;
+using Microsoft.Extensions.Configuration;
 
 namespace BETOnlineShopv1._0.Controllers
 {
@@ -26,11 +27,15 @@ namespace BETOnlineShopv1._0.Controllers
         UserManager<IdentityUser> _userManager;
         SignInManager<IdentityUser> _signInManager;
         static readonly HttpClient client = new HttpClient();
-        public HomeController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        private readonly string _apiBaseUrl;
+        private IConfiguration _configuration;
+        public HomeController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _httpClient.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+            _configuration = configuration;
+            _apiBaseUrl = _configuration["ApiSettings:BaseUrl"];
         }
 
         public async Task<ActionResult> Index(int? page)
@@ -44,7 +49,7 @@ namespace BETOnlineShopv1._0.Controllers
                     return RedirectToAction("Index", "Home", new { area = "Customer" });
                 }
                 List<Product> shopitems = new List<Product>();
-                    using (var response = await client.GetAsync("https://localhost:44368/api/Product/getallproducts"))
+                    using (var response = await client.GetAsync(_apiBaseUrl+"Product/getallproducts"))
                     {
                         string apiRes = await response.Content.ReadAsStringAsync();
                         shopitems = JsonConvert.DeserializeObject<List<Product>>(apiRes);
@@ -82,12 +87,12 @@ namespace BETOnlineShopv1._0.Controllers
                 }
                 Product shopItem = new Product();
                 List<ProductType> itemTypes = new List<ProductType>();
-                    using (var response = await client.GetAsync("https://localhost:44368/api/Product/" + Id))
+                    using (var response = await client.GetAsync(_apiBaseUrl + "Product/" + Id))
                     {
                         string apiRes = await response.Content.ReadAsStringAsync();
                         shopItem = JsonConvert.DeserializeObject<Product>(apiRes);
                     }
-                    using (var response = await client.GetAsync("https://localhost:44368/api/ProductType/getalltypes"))
+                    using (var response = await client.GetAsync(_apiBaseUrl + "ProductType/getalltypes"))
                     {
                         string apiRes = await response.Content.ReadAsStringAsync();
                         itemTypes = JsonConvert.DeserializeObject<List<ProductType>>(apiRes);
@@ -125,12 +130,12 @@ namespace BETOnlineShopv1._0.Controllers
                 List<Product> products = new List<Product>();
                 Product shopItem = new Product();
                 List<ProductType> itemTypes = new List<ProductType>();
-                    using (var response = await client.GetAsync("https://localhost:44368/api/Product/" + prod.Id))
+                    using (var response = await client.GetAsync(_apiBaseUrl + "Product/" + prod.Id))
                     {
                         string apiRes = await response.Content.ReadAsStringAsync();
                         shopItem = JsonConvert.DeserializeObject<Product>(apiRes);
                     }
-                    using (var response = await client.GetAsync("https://localhost:44368/api/ProductType/getalltypes"))
+                    using (var response = await client.GetAsync(_apiBaseUrl + "ProductType/getalltypes"))
                     {
                         string apiRes = await response.Content.ReadAsStringAsync();
                         itemTypes = JsonConvert.DeserializeObject<List<ProductType>>(apiRes);

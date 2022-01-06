@@ -9,6 +9,7 @@ using System.Net.Http;
 using Newtonsoft.Json;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace BETOnlineShopv1._0.Areas.Customer.Controllers
 {
@@ -19,11 +20,15 @@ namespace BETOnlineShopv1._0.Areas.Customer.Controllers
         SignInManager<IdentityUser> _signInManager;
         HttpClientHandler _httpClient = new HttpClientHandler();
         static readonly HttpClient client = new HttpClient();
-        public UserController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        private readonly string _apiBaseUrl;
+        private IConfiguration _configuration;
+        public UserController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _httpClient.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+            _configuration = configuration;
+            _apiBaseUrl = _configuration["ApiSettings:BaseUrl"]; 
         }
         public IActionResult Index()
         {
@@ -78,7 +83,7 @@ namespace BETOnlineShopv1._0.Areas.Customer.Controllers
                     TokenResponse tResp = new TokenResponse();
 
                         StringContent content = new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, "application/json");
-                        using (var response = await client.PostAsync("https://localhost:44368/api/User/login", content))
+                        using (var response = await client.PostAsync(_apiBaseUrl+"User/login", content))
                         {
                             string apiRes = await response.Content.ReadAsStringAsync();
                             tResp = JsonConvert.DeserializeObject<TokenResponse>(apiRes);
@@ -113,7 +118,7 @@ namespace BETOnlineShopv1._0.Areas.Customer.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]//4:30
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             try

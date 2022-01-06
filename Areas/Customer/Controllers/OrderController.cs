@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Net.Mail;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Configuration;
 
 namespace BETOnlineShopv1._0.Areas.Customer.Controllers
 {
@@ -33,13 +34,18 @@ namespace BETOnlineShopv1._0.Areas.Customer.Controllers
         private IWebHostEnvironment _environment;
         private ICompositeViewEngine _compositeViewEngine;
         static readonly HttpClient client = new HttpClient();
-        public OrderController(ApplicationDbContext db, ICompositeViewEngine compositeViewEngine, IWebHostEnvironment environment, IHttpContextAccessor httpContextAccessor)
+        private readonly string _apiBaseUrl;
+        private IConfiguration _configuration;
+        public OrderController(ApplicationDbContext db, ICompositeViewEngine compositeViewEngine, IWebHostEnvironment environment, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
         {
             _db = db;
             _environment = environment;
             _compositeViewEngine = compositeViewEngine;
           _httpContextAccessor = httpContextAccessor;
           _httpClient.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; };
+            _configuration = configuration;
+            _apiBaseUrl = _configuration["ApiSettings:BaseUrl"];
+         
         }
         public IActionResult Index()
         {
@@ -80,7 +86,7 @@ namespace BETOnlineShopv1._0.Areas.Customer.Controllers
                     await CreatePdf();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userToken);
                 StringContent content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json");
-                using (var response = await client.PostAsync("https://localhost:44368/api/Order/addanorder", content))
+                using (var response = await client.PostAsync(_apiBaseUrl + "Order/addanorder", content))
                 {
                     string apiRes = await response.Content.ReadAsStringAsync();
 
@@ -104,7 +110,7 @@ namespace BETOnlineShopv1._0.Areas.Customer.Controllers
                 List<Order> orderdItems = new List<Order>();
                 var userToken = HttpContext.Session.GetString("JWToken");
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userToken);
-                using (var response = await client.GetAsync("https://localhost:44368/api/Order/getallorders"))
+                using (var response = await client.GetAsync(_apiBaseUrl + "Order/getallorders"))
                 {
                     string apiRes = await response.Content.ReadAsStringAsync();
                     orderdItems = JsonConvert.DeserializeObject<List<Order>>(apiRes);
@@ -126,7 +132,7 @@ namespace BETOnlineShopv1._0.Areas.Customer.Controllers
                 Order orderdItem = new Order();
                 var userToken = HttpContext.Session.GetString("JWToken");
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userToken);
-                using (var response = await client.GetAsync("https://localhost:44368/api/Order/"+id))
+                using (var response = await client.GetAsync(_apiBaseUrl + "Order/" +id))
                 {
                     string apiRes = await response.Content.ReadAsStringAsync();
                     orderdItem = JsonConvert.DeserializeObject<Order>(apiRes);
@@ -153,7 +159,7 @@ namespace BETOnlineShopv1._0.Areas.Customer.Controllers
                     var userToken = HttpContext.Session.GetString("JWToken");
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userToken);
                     StringContent content = new StringContent(JsonConvert.SerializeObject(order), Encoding.UTF8, "application/json");
-                    using (var response = await client.PutAsync("https://localhost:44368/api/Order/updateOrder", content))
+                    using (var response = await client.PutAsync(_apiBaseUrl + "Order/updateOrder", content))
                     {
                         string apiRes = await response.Content.ReadAsStringAsync();
                         orderItem = JsonConvert.DeserializeObject<Order>(apiRes);
@@ -182,7 +188,7 @@ namespace BETOnlineShopv1._0.Areas.Customer.Controllers
 
                 var userToken = HttpContext.Session.GetString("JWToken");
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userToken);
-                using (var response = await client.GetAsync("https://localhost:44368/api/OrderDetails/" + id))
+                using (var response = await client.GetAsync(_apiBaseUrl + "OrderDetails/" + id))
                 {
                     string apiRes = await response.Content.ReadAsStringAsync();
                     orderdetails = JsonConvert.DeserializeObject<List<OrderDetails>>(apiRes);
@@ -235,10 +241,10 @@ namespace BETOnlineShopv1._0.Areas.Customer.Controllers
             try
             {
                 string MailBody = "Hi " + toEmail + " Please find attached summary of your order. Thank you";
-                string fromEmail = "somemailaddress";
+                string fromEmail = _configuration["Email:Username"];
                 string emailTitle = "Order Details";
                 string mailSubject = "Order Details";
-                string mailPassword = "somepassword";
+                string mailPassword = _configuration["Email:Password"];
 
                 //Mail message
                 MailMessage message = new MailMessage(new MailAddress(fromEmail, emailTitle), new MailAddress(toEmail));
